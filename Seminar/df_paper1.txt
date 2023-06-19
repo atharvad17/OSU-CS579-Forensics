@@ -1,0 +1,19 @@
+-> The Windows operating system (OS) cluster allocation algorithms together with NTFS cannot differentiate between unique data and shared data, hence the data
+types will be stored together.
+->  Each machine is powered on, a file operation (write, expand, shrink and delete files with a weighted random distribution) is performed on its internal (virtual) hard drive, which is then powered down and finally a copy of the $Bitmap file from the $MFT is extracted externally (via the host).
+-> 	1.Boot a virtual machine.
+	2. Randomly (with bias) either create, delete, expand or shrink a file within the virtual machine's NTFS file system.
+	3. Shut down the machine
+	4. Extract the $Bitmap file from the virtual hard disk (using dd from the host).
+-> Number File operation
+0 create
+1 delete
+2 increase
+3 decrease
+-> We would have to use the istat (Carrier, 2014) to find what clusters each file allocates and then do a difference calculation.
+-> An MFT record is 1 KiB in size and the smallest allocatable unit in a 64 GiB NTFS partition is 4 KiB, hence every fourth file creation will give rise to a new cluster being allocated due to new MFT records being created.
+-> In these machines we have found the $MFTMirr file to be located at different LBA positions, none of them at the middle of the partition.
+-> Hence we can conclude that although similar, the behavior of the allocation algorithm in different versions of Windows are deviating.
+-> In Windows 7 & 10, the result showed that the files were heavily fragmented and that the allocation algorithm had allocated free areas in order of increasing size. There were noise in the form of some small areas allocated in between the larger, but the trend was clearly visible.
+-> The highest probability can be found approximately 10% into a (64 GiB) partition. The probability is then slowly decreasing down to half the maximum value and then drops rapidly towards zero closer to the end of the partitions in our experiment.
+-> Logical Block Addressing (LBA)
